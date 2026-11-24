@@ -1,0 +1,74 @@
+# Deploys the API (backend/) and the website (frontend/) to Jana's Vercel
+# account every time something is merged into main.
+#
+# Why a GitHub Action: the repository belongs to Hana Fady's GitHub account,
+# and on the free Vercel plan only the repository owner can connect it to
+# Vercel. Instead, Jana created both Vercel projects with the Vercel CLI, and
+# this workflow uses her token to deploy them.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions),
+# added by the repository owner:
+#   VERCEL_TOKEN            Jana's Vercel token (Vercel -> Account Settings -> Tokens)
+#   VERCEL_ORG_ID           "orgId" from backend/.vercel/project.json
+#   VERCEL_PROJECT_ID_API   "projectId" from backend/.vercel/project.json
+#   VERCEL_PROJECT_ID_WEB   "projectId" from frontend/.vercel/project.json
+#
+# Environment variables (DATABASE_URL etc.) are NOT here: they stay in the
+# Vercel project settings and are pulled at build time.
+#
+# Owner: Jana Hossam (deployment)
+
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # also allows a manual run from the Actions tab
+
+permissions:
+  contents: read # this workflow only reads the code
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false # never stop a deployment halfway
+
+jobs:
+  deploy:
+    name: Deploy ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            dir: backend
+            project_secret: VERCEL_PROJECT_ID_API
+          - name: website
+            dir: frontend
+            project_secret: VERCEL_PROJECT_ID_WEB
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets[matrix.project_secret] }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install the Vercel CLI
+        run: npm install --global vercel@66
+
+      - name: Get project settings and production environment variables
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy to production
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"

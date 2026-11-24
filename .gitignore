@@ -1,0 +1,14 @@
+# Secrets - never commit
+.env
+.env.*
+!.env.example
+
+# Dependencies and local tool folders
+node_modules/
+.vercel/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
