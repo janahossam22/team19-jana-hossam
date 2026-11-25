@@ -20,6 +20,8 @@ This repository contains only the files I wrote. Every part below links to the p
 | 4 | Daily notification job run by Vercel Cron, protected by `CRON_SECRET` (constant-time compare, fails closed), runs as the `notifier` role, no duplicates per day; 4 database tests | [#49](https://github.com/hanaelmasryy/Onboarding-portal-team19/pull/49) | `backend/src/routes/dashboard.js`, `backend/vercel.json`, `backend/test/dashboard.db.test.js` |
 | 4 | Postman collection for the dashboard, audit-log and notifications API: 13 requests with tests (200 / 400 / 404 / 401), 13/13 passed | [#50](https://github.com/hanaelmasryy/Onboarding-portal-team19/pull/50) | `docs/postman/dashboard.postman_collection.json` |
 
+| 4 | Dashboard screen (summary tiles, plan progress with filter and paging, overdue / at-risk / deactivated-owner lists) and Admin audit-log screen (filters, paging); textContent only, role checks on page and API | [#61](https://github.com/hanaelmasryy/Onboarding-portal-team19/pull/61) | `frontend/dashboard.html`, `frontend/audit.html`, `frontend/js/dashboard.js`, `frontend/js/audit.js` |
+
 I also reviewed my teammates' pull requests: Hana Fady's [#32](https://github.com/hanaelmasryy/Onboarding-portal-team19/pull/32) (user accounts, threat model) and Hana Anwar's [#46](https://github.com/hanaelmasryy/Onboarding-portal-team19/pull/46) (task status rules, reassignment, internal notes).
 
 ## API endpoints I built

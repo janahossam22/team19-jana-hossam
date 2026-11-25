@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Dashboard · Onboarding Portal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Onboarding Portal</span>
+  </header>
+
+  <main class="container wide">
+    <div class="page-head">
+      <h1>Dashboard</h1>
+      <button id="refresh" type="button" class="secondary">Refresh</button>
+    </div>
+    <p id="page-message" class="message" hidden></p>
+
+    <!-- Summary numbers -->
+    <section aria-labelledby="summary-title">
+      <h2 id="summary-title" class="visually-hidden">Summary</h2>
+      <div id="summary" class="stats"></div>
+    </section>
+
+    <!-- Progress of each plan -->
+    <section class="dash-section" aria-labelledby="plans-title">
+      <h2 id="plans-title">Plan progress</h2>
+      <form id="plan-filters" class="toolbar">
+        <label>Status
+          <select id="status-filter">
+            <option value="">All plans</option>
+            <option value="Active" selected>Active</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </label>
+      </form>
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th scope="col">Plan</th><th scope="col">Customer</th><th scope="col">Status</th>
+                <th scope="col">Progress</th><th scope="col">Overdue</th><th scope="col">Next due</th></tr>
+          </thead>
+          <tbody id="plan-rows"></tbody>
+        </table>
+      </div>
+      <p id="plans-empty" class="muted" hidden>No plans match.</p>
+      <div class="pager">
+        <button id="prev-page" type="button" class="secondary small">Previous</button>
+        <span id="page-label" class="muted small"></span>
+        <button id="next-page" type="button" class="secondary small">Next</button>
+      </div>
+    </section>
+
+    <!-- Needs attention -->
+    <section class="dash-section" aria-labelledby="overdue-title">
+      <h2 id="overdue-title">Overdue tasks</h2>
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th scope="col">Task</th><th scope="col">Plan</th><th scope="col">Owner</th>
+                <th scope="col">Due</th><th scope="col">Days late</th></tr>
+          </thead>
+          <tbody id="overdue-rows"></tbody>
+        </table>
+      </div>
+      <p id="overdue-empty" class="muted" hidden>No overdue tasks.</p>
+    </section>
+
+    <section class="dash-section" aria-labelledby="risk-title">
+      <h2 id="risk-title">Plans at risk</h2>
+      <p class="muted small">A plan is at risk if a task is overdue, or a task due within <span id="risk-days">2</span> days hasn't started.</p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th scope="col">Plan</th><th scope="col">Customer</th><th scope="col">Overdue</th>
+                <th scope="col">Due soon, not started</th><th scope="col">Why</th></tr>
+          </thead>
+          <tbody id="risk-rows"></tbody>
+        </table>
+      </div>
+      <p id="risk-empty" class="muted" hidden>No plans at risk.</p>
+    </section>
+
+    <section class="dash-section" aria-labelledby="inactive-title">
+      <h2 id="inactive-title">Open tasks owned by deactivated users</h2>
+      <p class="muted small">These tasks need a new owner (reassign them on the plan page).</p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th scope="col">Task</th><th scope="col">Plan</th><th scope="col">Deactivated owner</th>
+                <th scope="col">Status</th><th scope="col">Due</th></tr>
+          </thead>
+          <tbody id="inactive-rows"></tbody>
+        </table>
+      </div>
+      <p id="inactive-empty" class="muted" hidden>None.</p>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

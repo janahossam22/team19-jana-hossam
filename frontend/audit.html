@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Audit log · Onboarding Portal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">Onboarding Portal</span>
+  </header>
+
+  <main class="container wide">
+    <div class="page-head">
+      <h1>Audit log</h1>
+    </div>
+    <p class="muted small">Security events, newest first: logins, refused access, changes to templates, users and plans, and the daily job. The log can't be edited or deleted.</p>
+    <p id="page-message" class="message" hidden></p>
+
+    <form id="filters" class="toolbar" role="search">
+      <label>Action
+        <input id="action" list="action-list" maxlength="60" placeholder="e.g. login_failed" autocomplete="off">
+        <datalist id="action-list">
+          <option value="login"></option>
+          <option value="login_failed"></option>
+          <option value="login_locked"></option>
+          <option value="login_inactive"></option>
+          <option value="access_denied"></option>
+          <option value="user_create"></option>
+          <option value="template_create"></option>
+          <option value="template_update"></option>
+          <option value="plan_create"></option>
+          <option value="plan_cancel"></option>
+          <option value="task_status"></option>
+          <option value="task_reassign"></option>
+          <option value="note_create"></option>
+          <option value="job_notifications"></option>
+          <option value="job_denied"></option>
+        </datalist>
+      </label>
+      <label>Result
+        <select id="result">
+          <option value="">All</option>
+          <option value="allowed">Allowed</option>
+          <option value="denied">Denied</option>
+        </select>
+      </label>
+      <label>From
+        <input id="from" type="date">
+      </label>
+      <label>To (inclusive)
+        <input id="to" type="date">
+      </label>
+      <div class="actions">
+        <button type="submit">Apply</button>
+        <button id="clear" type="button" class="secondary">Clear</button>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr><th scope="col">Time</th><th scope="col">Who</th><th scope="col">Action</th>
+              <th scope="col">Record</th><th scope="col">Result</th><th scope="col">IP address</th></tr>
+        </thead>
+        <tbody id="audit-rows"></tbody>
+      </table>
+    </div>
+    <p id="audit-empty" class="muted" hidden>No events match.</p>
+    <div class="pager">
+      <button id="prev-page" type="button" class="secondary small">Previous</button>
+      <span id="page-label" class="muted small"></span>
+      <button id="next-page" type="button" class="secondary small">Next</button>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/audit.js"></script>
+</body>
+</html>
