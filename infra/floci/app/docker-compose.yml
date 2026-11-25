@@ -1,0 +1,53 @@
+# Team 19 - the API in the AWS version of the app (Floci) - Jana Hossam, issue #43
+#   floci: the AWS emulator (RDS, IAM, Secrets Manager)
+#   api:   our Express API, running as the IAM role team19-api.
+#          Started by start-app.sh, which passes the role's temporary keys.
+#          No passwords or secrets are written in this file.
+name: team19-floci-app
+
+services:
+  floci:
+    image: floci/floci:2.5.0
+    container_name: floci
+    user: root
+    network_mode: bridge   # same network as the RDS container Floci starts
+    ports:
+      - "4566:4566"
+      - "7001-7020:7001-7020"
+      - "3000:3000"   # the API: it shares Floci's network (see api below)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+      FLOCI_SERVICES_RDS_PROXY_BASE_PORT: "7001"
+      FLOCI_SERVICES_RDS_PROXY_MAX_PORT: "7020"
+      FLOCI_SERVICES_RDS_ENDPOINT_HOST: localhost
+
+  api:
+    profiles: ["app"]   # not started by a plain "up": start-app.sh starts it
+    build:
+      context: ../../..
+      dockerfile: infra/floci/app/Dockerfile
+    container_name: team19-api
+    network_mode: "service:floci"   # localhost:4566 and localhost:7001 reach Floci
+    depends_on: [floci]
+    # Hardening: read-only files, no Linux capabilities, no privilege gain
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      PORT: "3000"
+      AWS_REGION: ${REGION:-us-east-1}
+      AWS_ENDPOINT_URL: http://localhost:4566
+      # team19-api's temporary keys (1 hour), given by start-app.sh
+      AWS_ACCESS_KEY_ID: ${API_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${API_SECRET_KEY:-}
+      AWS_SESSION_TOKEN: ${API_SESSION_TOKEN:-}
+      APP_SECRET_ID: team19/app
+      # IAM database login: no password in the URLs (src/db/pool.js)
+      DB_IAM_AUTH: "true"
+      DATABASE_URL: postgresql://app_rw@localhost:${DB_PORT:-7001}/${DB_NAME:-onboarding}
+      DASHBOARD_DATABASE_URL: postgresql://dashboard_ro@localhost:${DB_PORT:-7001}/${DB_NAME:-onboarding}
+      NOTIFIER_DATABASE_URL: postgresql://notifier@localhost:${DB_PORT:-7001}/${DB_NAME:-onboarding}
+      CORS_ORIGINS: http://localhost:5500,http://127.0.0.1:5500

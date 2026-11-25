@@ -1,0 +1,6 @@
+# Never send these to the Docker build
+**/node_modules
+**/.env
+**/.env.*
+.git
+infra/floci/.state

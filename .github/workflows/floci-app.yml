@@ -1,0 +1,77 @@
+# Floci: the API in the AWS version (issue #43) - Jana Hossam
+# Starts Floci, builds the RDS + IAM setup (Hana's setup.sh), puts the app's
+# secrets in Secrets Manager and starts the API as team19-api (start-app.sh),
+# then runs the checks (smoke.sh). No AWS account or GitHub secrets are
+# needed: everything runs inside this job and is thrown away at the end.
+name: Floci – API in the AWS version
+
+on:
+  push:
+    branches: [main, 'feature/floci-**']
+    paths:
+      - 'infra/floci/**'
+      - 'backend/**'
+      - '.github/workflows/floci-app.yml'
+  pull_request:
+    paths:
+      - 'infra/floci/**'
+      - 'backend/**'
+      - '.github/workflows/floci-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: floci-app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test        # Floci's bootstrap credential, emulator only
+      AWS_SECRET_ACCESS_KEY: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tools
+        run: |
+          aws --version
+          psql --version || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+          jq --version
+          docker compose version
+
+      - name: Start Floci (docker-compose.yml)
+        run: |
+          docker compose -f infra/floci/app/docker-compose.yml up -d floci
+          for i in $(seq 1 60); do
+            aws sts get-caller-identity >/dev/null 2>&1 && break
+            sleep 2
+          done
+
+      - name: Build RDS PostgreSQL + IAM roles (setup.sh)
+        run: bash infra/floci/setup.sh
+
+      - name: Secrets Manager + start the API as team19-api (start-app.sh)
+        run: bash infra/floci/app/start-app.sh
+
+      - name: Checks (smoke.sh)
+        run: bash infra/floci/app/smoke.sh
+
+      - name: Save results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: floci-app-results
+          path: infra/floci/.state/app-results.md
+          if-no-files-found: ignore
+
+      - name: Logs (on failure)
+        if: failure()
+        run: |
+          echo "--- API ---";   docker logs team19-api 2>&1 | tail -n 100 || true
+          echo "--- Floci ---"; docker logs floci 2>&1 | tail -n 100 || true
